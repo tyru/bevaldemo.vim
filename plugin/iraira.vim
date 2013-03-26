@@ -7,9 +7,9 @@ command! IrairaStop
 \   call s:stop()
 
 
-let s:BALLOON_DELAY = 100
+let s:BALLOON_DELAY = 1
+let s:UPDATETIME = 200
 let s:mouse_pos = {'x': -1, 'y': -1}
-let s:rewriting = 0
 
 
 function! s:start()
@@ -18,11 +18,21 @@ function! s:start()
         return
     endif
     call s:setup_iraira_buffer()
+
+    " Create augroup.
+    augroup iraira
+        autocmd!
+    augroup END
+    call s:register_cursorhold(s:UPDATETIME)
     call s:register_balloon_eval(s:BALLOON_DELAY)
+
+    " Start polling.
+    call s:polling()
 endfunction
 
 function! s:stop()
     call s:close_iraira_buffer()
+    call s:unregister_cursorhold()
     call s:unregister_balloon_eval()
 endfunction
 
@@ -45,9 +55,44 @@ function! s:close_iraira_buffer()
     close!
 endfunction
 
+function! s:register_cursorhold(local_updatetime)
+    " Localize updatetime.
+    let b:iraira_updatetime = &updatetime
+    augroup iraira
+        autocmd BufLeave <buffer> call s:unregister_cursorhold()
+    augroup END
+    let &updatetime = a:local_updatetime
+
+    " Register CursorHold event.
+    augroup iraira
+        autocmd CursorHold <buffer> call s:polling()
+    augroup END
+endfunction
+
+function! s:polling()
+    try
+        call s:main_loop()
+    finally
+        call feedkeys("g\<Esc>", "n")
+    endtry
+endfunction
+
+function! s:main_loop()
+    redraw
+    echom printf('(%s, %s) at %s', s:mouse_pos.x, s:mouse_pos.y, reltimestr(reltime()))
+endfunction
+
+function! s:unregister_cursorhold()
+    if exists('b:mousehover_updatetime')
+        let &updatetime = b:mousehover_updatetime
+        unlet b:mousehover_updatetime
+    endif
+endfunction
+
+
+
 function! s:register_balloon_eval(balloondelay)
     augroup iraira
-        autocmd!
         autocmd BufLeave <buffer> call s:unregister_balloon_eval()
     augroup END
     let &l:balloondelay = a:balloondelay
@@ -56,21 +101,12 @@ function! s:register_balloon_eval(balloondelay)
 endfunction
 
 function! IrairaBalloonExpr()
-    " Get current mouse cursor position.
-    let s:mouse_pos = {'x': v:beval_col, 'y': v:beval_lnum}
     " 'balloonexpr' must not have side-effect.
-    " Queue a process of rewriting a buffer.
-    if !s:rewriting
-        call feedkeys(":\<C-u>call IrairaRewriteBuffer()\<CR>", 'n')
-        let s:rewriting = 1
-    endif
+    " Just get current mouse cursor position.
+    let s:mouse_pos = {'x': v:beval_col, 'y': v:beval_lnum}
     " No popup.
-    return ''
-endfunction
-
-function! IrairaRewriteBuffer()
-    echom 'rewrite!'
-    let s:rewriting = 0
+    " return ''
+    return reltimestr(reltime())
 endfunction
 
 function! s:unregister_balloon_eval()
