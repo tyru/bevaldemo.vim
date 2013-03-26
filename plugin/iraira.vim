@@ -48,6 +48,8 @@ function! s:setup_iraira_buffer()
     " Add highlight.
     syn match IrairaCurPos /x/
     highlight IrairaCurPos term=reverse cterm=bold ctermfg=1 ctermbg=1 guifg=Red guibg=Red
+    " Stop highlight current 'cursor', not current 'mouse position'.
+    highlight def link Cursor None
 
     " Fill characters in the buffer.
     " :help 'balloonexpr' says:
