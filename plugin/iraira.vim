@@ -10,8 +10,8 @@ command! IrairaStop
 \   call s:stop()
 
 
-let s:BALLOON_DELAY = 50
-let s:UPDATETIME = 200
+let s:BALLOON_DELAY = 20
+let s:UPDATETIME = 100
 let s:prev_mouse_pos = {'col': -1, 'lnum': -1}
 let s:mouse_pos = {'col': -1, 'lnum': -1}
 
