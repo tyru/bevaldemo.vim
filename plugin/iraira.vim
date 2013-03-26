@@ -9,7 +9,7 @@ command! IrairaStop
 
 let s:BALLOON_DELAY = 1
 let s:UPDATETIME = 200
-let s:mouse_pos = {'x': -1, 'y': -1}
+let s:mouse_pos = {'col': -1, 'lnum': -1}
 
 
 function! s:start()
@@ -48,7 +48,7 @@ function! s:setup_iraira_buffer()
     setlocal nowrap
     let s:MAX_COLUMNS = 480    " TODO
     let s:MAX_LINES = 640      " TODO
-    call setline(1, repeat([repeat('x', s:MAX_COLUMNS)], s:MAX_LINES))
+    call setline(1, repeat([repeat('o', s:MAX_COLUMNS)], s:MAX_LINES))
 endfunction
 
 function! s:close_iraira_buffer()
@@ -79,7 +79,9 @@ endfunction
 
 function! s:main_loop()
     redraw
-    echom printf('(%s, %s) at %s', s:mouse_pos.x, s:mouse_pos.y, reltimestr(reltime()))
+    echom printf('(%s, %s) at %s', s:mouse_pos.col, s:mouse_pos.lnum, reltimestr(reltime()))
+
+    call s:setchar(s:mouse_pos.lnum, s:mouse_pos.col, 'x')
 endfunction
 
 function! s:unregister_cursorhold()
@@ -103,7 +105,7 @@ endfunction
 function! IrairaBalloonExpr()
     " 'balloonexpr' must not have side-effect.
     " Just get current mouse cursor position.
-    let s:mouse_pos = {'x': v:beval_col, 'y': v:beval_lnum}
+    let s:mouse_pos = {'col': v:beval_col, 'lnum': v:beval_lnum}
     " No popup.
     " return ''
     return reltimestr(reltime())
@@ -122,4 +124,13 @@ function! s:error(msg)
     finally
         echohl None
     endtry
+endfunction
+
+function! s:setchar(lnum, col, char)
+    if a:char !=# ''
+        let line = getline(a:lnum)
+        let left = a:col-2 <# 0 ? '' : line[: a:col-2]
+        let right = line[a:col :]
+        call setline(a:lnum, left.a:char.right)
+    endif
 endfunction
