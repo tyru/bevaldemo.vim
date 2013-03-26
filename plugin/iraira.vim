@@ -7,7 +7,7 @@ command! IrairaStop
 \   call s:stop()
 
 
-let s:BALLOON_DELAY = 1
+let s:BALLOON_DELAY = 50
 let s:UPDATETIME = 200
 let s:mouse_pos = {'col': -1, 'lnum': -1}
 
@@ -27,7 +27,7 @@ function! s:start()
     call s:register_balloon_eval(s:BALLOON_DELAY)
 
     " Start polling.
-    call s:polling()
+    " call s:polling()
 endfunction
 
 function! s:stop()
