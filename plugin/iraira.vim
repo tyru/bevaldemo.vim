@@ -58,8 +58,6 @@ endfunction
 function! IrairaBalloonExpr()
     " Get current mouse cursor position.
     let s:mouse_pos = {'x': v:beval_col, 'y': v:beval_lnum}
-    let _ = s:mouse_pos
-    PP! _
     " 'balloonexpr' must not have side-effect.
     " Queue a process of rewriting a buffer.
     if !s:rewriting
