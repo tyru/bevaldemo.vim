@@ -7,7 +7,7 @@ command! IrairaStop
 \   call s:stop()
 
 
-let s:BALLOON_DELAY = 300
+let s:BALLOON_DELAY = 100
 let s:mouse_pos = {'x': -1, 'y': -1}
 let s:rewriting = 0
 
@@ -38,7 +38,7 @@ function! s:setup_iraira_buffer()
     setlocal nowrap
     let s:MAX_COLUMNS = 480    " TODO
     let s:MAX_LINES = 640      " TODO
-    call setline(1, repeat([repeat('x ', s:MAX_COLUMNS)], s:MAX_LINES))
+    call setline(1, repeat([repeat('x', s:MAX_COLUMNS)], s:MAX_LINES))
 endfunction
 
 function! s:close_iraira_buffer()
