@@ -13,8 +13,8 @@ command! IrairaStop
 \   call s:stop()
 
 
-let s:BALLOON_DELAY = 40
-let s:UPDATETIME = 100
+let s:BALLOON_DELAY = 1
+let s:UPDATETIME = 50
 let s:MAX_SHOOTING_ANIMATE_COUNT = 5
 let s:CURSOR_NORMAL = 'o'
 let s:CURSOR_RED = 'x'
