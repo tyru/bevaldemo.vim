@@ -16,8 +16,8 @@ command! IrairaStop
 let s:BALLOON_DELAY = 1
 let s:UPDATETIME = 50
 let s:MAX_SHOOTING_ANIMATE_COUNT = 5
-let s:CURSOR_NORMAL = 'o'
-let s:CURSOR_RED = 'x'
+let s:CURSOR_NORMAL = '.'
+let s:CURSOR_RED = '_'
 
 function! s:initialize_variables()
     let s:mouse_pos = {'col': -1, 'lnum': -1}
@@ -63,10 +63,11 @@ function! s:setup_iraira_buffer()
     " Add highlight.
     syn match IrairaRed /x/
     highlight IrairaRed term=reverse cterm=bold ctermfg=1 ctermbg=1 guifg=Red guibg=Red
-    " FIXME
+    " FIXME: Do not change default highlight!
     " highlight def link IrairaCursor Cursor
     " highlight IrairaCursor term=reverse cterm=bold ctermfg=1 ctermbg=1 guifg=Red guibg=Red
     highlight Cursor term=reverse cterm=bold ctermfg=1 ctermbg=1 guifg=Red guibg=Red
+    " highlight Normal guifg=White guibg=White
 
     nnoremap <silent><buffer> <LeftMouse> :<C-u>call <SID>map_shot()<CR><LeftMouse>
     nmap <silent><buffer> <LeftDrag> <LeftMouse>
@@ -84,6 +85,9 @@ function! s:setup_iraira_buffer()
     setlocal cursorcolumn
     setlocal cursorline
     setlocal nohlsearch
+    if exists('+colorcolumn')
+        setlocal colorcolumn=
+    endif
     let s:MAX_COLUMNS = 480    " TODO
     let s:MAX_LINES = 640      " TODO
     call setline(1, repeat([repeat(s:CURSOR_NORMAL, s:MAX_COLUMNS)], s:MAX_LINES))
