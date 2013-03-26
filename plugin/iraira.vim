@@ -1,5 +1,8 @@
 
 
+" TODO: Use <LeftDrag> ?
+
+
 command! IrairaStart
 \   call s:start()
 
