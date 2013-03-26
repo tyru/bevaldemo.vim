@@ -12,6 +12,7 @@ command! IrairaStop
 
 let s:BALLOON_DELAY = 50
 let s:UPDATETIME = 200
+let s:prev_mouse_pos = {'col': -1, 'lnum': -1}
 let s:mouse_pos = {'col': -1, 'lnum': -1}
 
 
@@ -43,6 +44,10 @@ function! s:setup_iraira_buffer()
     " Open a buffer.
     tabedit
     silent file ___IRAIRA___
+
+    " Add highlight.
+    syn match IrairaCurPos /x/
+    highlight IrairaCurPos term=reverse cterm=bold ctermfg=1 ctermbg=1 guifg=Red guibg=Red
 
     " Fill characters in the buffer.
     " :help 'balloonexpr' says:
@@ -84,6 +89,17 @@ function! s:main_loop()
     redraw
     echom printf('(%s, %s) at %s', s:mouse_pos.col, s:mouse_pos.lnum, reltimestr(reltime()))
 
+    " Restore previous mouse position character.
+    if s:prev_mouse_pos.lnum ># 0 && s:prev_mouse_pos.col ># 0
+        call s:setchar(s:prev_mouse_pos.lnum, s:prev_mouse_pos.col, 'o')
+    endif
+
+    " Update previous mouse position.
+    if s:mouse_pos.lnum ># 0 && s:mouse_pos.col ># 0
+        let s:prev_mouse_pos = deepcopy(s:mouse_pos)
+    endif
+
+    " Change mouse position character.
     call s:setchar(s:mouse_pos.lnum, s:mouse_pos.col, 'x')
 endfunction
 
