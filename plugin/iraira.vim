@@ -108,6 +108,9 @@ function! s:BufferCommon.setup_common()
     setlocal nonumber
     setlocal nofoldenable
     setlocal foldcolumn=0
+    setlocal nowrap
+    setlocal lazyredraw    " for redrawing buffer
+    setlocal nohlsearch
 
     silent file ___IRAIRA___
 endfunction
@@ -198,6 +201,7 @@ function! s:BufferPlaying.setup()
     " highlight Normal guifg=White guibg=White
 
     nnoremap <silent><buffer> <LeftMouse> :<C-u>call <SID>call_buffer_method('__map_shot', [])<CR>
+    vmap <silent><buffer> <LeftMouse> <Esc><LeftMouse>
     nmap <silent><buffer> <LeftDrag> <LeftMouse>
     nmap <silent><buffer> <2-LeftMouse> <LeftMouse><LeftMouse>
     nmap <silent><buffer> <3-LeftMouse> <LeftMouse><LeftMouse><LeftMouse>
@@ -208,11 +212,8 @@ function! s:BufferPlaying.setup()
     " :help 'balloonexpr' says:
     "     NOTE: The balloon is displayed only if the cursor is on a text
     "     character.
-    setlocal nowrap
-    setlocal lazyredraw    " for redrawing buffer
     setlocal cursorcolumn
     setlocal cursorline
-    setlocal nohlsearch
     if exists('+colorcolumn')
         setlocal colorcolumn=
     endif
@@ -222,6 +223,12 @@ function! s:BufferPlaying.setup()
 
     call s:BufferPlaying.__register_cursorhold(s:UPDATETIME)
     call s:BufferPlaying.__register_ballooneval(s:BALLOONDELAY)
+
+    " * Need "Enter Visual-mode" -> "<LeftMouse>"
+    "   to update mouse position in real-time. (maybe gui-gtk problem?)
+    " * Need ":echo ''\<CR>" to avoid wrongly entering Visual-mode (why?)
+    "   when user pressed <LeftMouse> immediately after a click on "Click To Play".
+    call feedkeys("ggVG\<LeftMouse>:echo ''\<CR>", 't')
 endfunction
 
 function! s:BufferPlaying.__register_cursorhold(local_updatetime)
@@ -308,7 +315,6 @@ function! s:BufferPlaying.__main_loop()
 endfunction
 
 function! s:BufferPlaying.__map_shot()
-    echom 'shot!'
     let s:shooting = 1
     let s:shooting_animate_count = 1
 endfunction
