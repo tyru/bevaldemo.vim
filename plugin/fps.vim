@@ -13,10 +13,10 @@ set cpo&vim
 " * Do not enter Visual-mode. (:behave can prohibit this?)
 
 
-command! IrairaStart
+command! FPSStart
 \   call s:start()
 
-command! IrairaStop
+command! FPSStop
 \   call s:stop()
 
 
@@ -112,11 +112,11 @@ function! s:BufferCommon.setup_common()
     setlocal lazyredraw    " for redrawing buffer
     setlocal nohlsearch
 
-    silent file ___IRAIRA___
+    silent file ___FPS___
 endfunction
 
 function! s:BufferCommon.finalize()
-    if input('Do you sure want to force-stop? (use '':IrairaStop'' for normal stop) [y/n]: ') !~? 'y\%[es]'
+    if input('Do you sure want to force-stop? (use '':FPSStop'' for normal stop) [y/n]: ') !~? 'y\%[es]'
         echo "\nCanceled."
         call s:deep_sleep_msec(2)
         return
@@ -129,7 +129,7 @@ function! s:BufferCommon.finalize()
         call s:error('error: ['.v:exception.'] @ ['.v:throwpoint.']')
     endtry
 
-    call s:error('Force-stopped! Please use :IrairaStop for normal stop.')
+    call s:error('Force-stopped! Please use :FPSStop for normal stop.')
 endfunction
 
 " NOTE: Doesn't care with multi-byte
@@ -192,11 +192,11 @@ function! s:BufferPlaying.setup()
     call s:BufferCommon.setup_common()
 
     " Add highlight.
-    execute 'syn match IrairaRed /'.s:CURSOR_RED.'/'
-    highlight IrairaRed term=reverse cterm=bold ctermfg=1 ctermbg=1 guifg=Red guibg=Red
+    execute 'syn match FPSRed /'.s:CURSOR_RED.'/'
+    highlight FPSRed term=reverse cterm=bold ctermfg=1 ctermbg=1 guifg=Red guibg=Red
     " FIXME: Do not change default highlight!
-    " highlight def link IrairaCursor Cursor
-    " highlight IrairaCursor term=reverse cterm=bold ctermfg=1 ctermbg=1 guifg=Red guibg=Red
+    " highlight def link FPSCursor Cursor
+    " highlight FPSCursor term=reverse cterm=bold ctermfg=1 ctermbg=1 guifg=Red guibg=Red
     highlight Cursor term=reverse cterm=bold ctermfg=1 ctermbg=1 guifg=Red guibg=Red
     " highlight Normal guifg=White guibg=White
 
@@ -234,13 +234,13 @@ endfunction
 function! s:BufferPlaying.__register_cursorhold(local_updatetime)
     " Localize updatetime.
     let self._updatetime = &updatetime
-    augroup iraira
+    augroup fps
         autocmd BufLeave <buffer> call s:BufferPlaying.__unregister_cursorhold()
     augroup END
     let &updatetime = a:local_updatetime
 
     " Register CursorHold event.
-    augroup iraira
+    augroup fps
         autocmd CursorHold <buffer> call s:BufferPlaying.__polling()
     augroup END
 
@@ -248,7 +248,7 @@ function! s:BufferPlaying.__register_cursorhold(local_updatetime)
 endfunction
 
 function! s:BufferPlaying.__register_ballooneval(balloondelay)
-    augroup iraira
+    augroup fps
         autocmd BufLeave <buffer> call s:BufferPlaying.__unregister_ballooneval()
     augroup END
     let &l:balloondelay = a:balloondelay
