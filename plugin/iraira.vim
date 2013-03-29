@@ -20,15 +20,14 @@ command! IrairaStop
 \   call s:stop()
 
 
-let s:BALLOON_DELAY = 1
+let s:BALLOONDELAY = 1
 let s:UPDATETIME = 50
 let s:MAX_SHOOTING_ANIMATE_COUNT = 5
-let s:CURSOR_NORMAL = '.'
-let s:CURSOR_RED = '_'
+let s:CURSOR_NORMAL = 'o'
+let s:CURSOR_RED = 'x'
 
 function! s:initialize_variables()
     let s:buffer = s:BufferClickToPlay
-    let s:mouse_pos = {'col': -1, 'lnum': -1}
     let s:shooting = 0
     let s:shooting_animate_count = 0
     let s:setchar_changed_list = []
@@ -160,10 +159,16 @@ let s:BufferClickToPlay = {}
 function! s:BufferClickToPlay.setup()
     call s:BufferCommon.setup_common()
 
-    nnoremap <silent><buffer> <LeftMouse> :<C-u>call <SID>switch_buffer('BufferPlaying')<CR>
+    nnoremap <silent><buffer> <LeftMouse> :<C-u>call <SID>switch_buffer('BufferPlaying')<CR><LeftMouse>
 
+    " TODO: Centering
     call setline(1, [
-    \   '--- Click To Play ---'
+    \   '',
+    \   '',
+    \   '',
+    \   '    --- Click To Play ---',
+    \   '',
+    \   '',
     \])
 endfunction
 
@@ -184,7 +189,7 @@ function! s:BufferPlaying.setup()
     call s:BufferCommon.setup_common()
 
     " Add highlight.
-    syn match IrairaRed /x/
+    execute 'syn match IrairaRed /'.s:CURSOR_RED.'/'
     highlight IrairaRed term=reverse cterm=bold ctermfg=1 ctermbg=1 guifg=Red guibg=Red
     " FIXME: Do not change default highlight!
     " highlight def link IrairaCursor Cursor
@@ -216,7 +221,7 @@ function! s:BufferPlaying.setup()
     call setline(1, repeat([repeat(s:CURSOR_NORMAL, MAX_COLUMNS)], MAX_LINES))
 
     call s:BufferPlaying.__register_cursorhold(s:UPDATETIME)
-    call s:BufferPlaying.__register_ballooneval(s:BALLOON_DELAY)
+    call s:BufferPlaying.__register_ballooneval(s:BALLOONDELAY)
 endfunction
 
 function! s:BufferPlaying.__register_cursorhold(local_updatetime)
@@ -240,69 +245,59 @@ function! s:BufferPlaying.__register_ballooneval(balloondelay)
         autocmd BufLeave <buffer> call s:BufferPlaying.__unregister_ballooneval()
     augroup END
     let &l:balloondelay = a:balloondelay
-    setlocal balloonexpr=IrairaBalloonExpr()
+    " Must set non-empty expression to set v:beval_col and v:beval_lnum.
+    setlocal balloonexpr='x_x'
     setlocal ballooneval
 
     let self._registered_ballooneval = 1
 endfunction
 
-function! IrairaBalloonExpr()
-    " 'balloonexpr' must not have side-effect.
-    " Just get current mouse cursor position.
-    let s:mouse_pos = {'col': v:beval_col, 'lnum': v:beval_lnum}
-    " No popup.
-    " return ''
-    return printf('(%s, %s)', s:mouse_pos.col, s:mouse_pos.lnum)
-endfunction
-
 function! s:BufferPlaying.__polling()
+    " Restore all changed chars.
     call s:BufferCommon.restore_chars()
-    if s:mouse_pos.lnum ># 0 && s:mouse_pos.col ># 0
-    \   && s:mouse_pos.lnum isnot line('.')
-    \   || s:mouse_pos.col isnot col('.')
-        call cursor(s:mouse_pos.lnum, s:mouse_pos.col)
+
+    " Move cursor to current mouse position.
+    if v:beval_lnum ># 0 && v:beval_col ># 0
+    \   && v:beval_lnum isnot line('.')
+    \   || v:beval_col isnot col('.')
+        call cursor(v:beval_lnum, v:beval_col)
     endif
+    " Do main loop.
     try
         call s:BufferPlaying.__main_loop()
     finally
+        " Invoke next CursorHold (main loop).
         call feedkeys("g\<Esc>", "n")
-        redraw
+        " redraw
     endtry
 endfunction
 
 function! s:BufferPlaying.__main_loop()
     redraw
-    echo printf('(%s, %s) at %s', s:mouse_pos.col, s:mouse_pos.lnum, reltimestr(reltime()))
-
-    if s:mouse_pos.lnum <=# 0 || s:mouse_pos.col <=# 0
-        return
-    endif
-
-    " Change mouse position character.
-    call s:BufferCommon.setchar(s:mouse_pos.lnum, s:mouse_pos.col, s:CURSOR_RED)
+    echo printf('(%s, %s) at %s', v:beval_col, v:beval_lnum, reltimestr(reltime()))
 
     " Shot enemy.
     if s:shooting
         if s:shooting_animate_count <=# s:MAX_SHOOTING_ANIMATE_COUNT
             " left, above
             call s:BufferCommon.setchar(
-            \   s:mouse_pos.lnum - s:shooting_animate_count,
-            \   s:mouse_pos.col  - s:shooting_animate_count,
+            \   v:beval_lnum - s:shooting_animate_count,
+            \   v:beval_col  - s:shooting_animate_count,
             \   s:CURSOR_RED)
             " left, below
             call s:BufferCommon.setchar(
-            \   s:mouse_pos.lnum - s:shooting_animate_count,
-            \   s:mouse_pos.col  + s:shooting_animate_count,
+            \   v:beval_lnum - s:shooting_animate_count,
+            \   v:beval_col  + s:shooting_animate_count,
             \   s:CURSOR_RED)
             " right, above
             call s:BufferCommon.setchar(
-            \   s:mouse_pos.lnum + s:shooting_animate_count,
-            \   s:mouse_pos.col  - s:shooting_animate_count,
+            \   v:beval_lnum + s:shooting_animate_count,
+            \   v:beval_col  - s:shooting_animate_count,
             \   s:CURSOR_RED)
             " right, below
             call s:BufferCommon.setchar(
-            \   s:mouse_pos.lnum + s:shooting_animate_count,
-            \   s:mouse_pos.col  + s:shooting_animate_count,
+            \   v:beval_lnum + s:shooting_animate_count,
+            \   v:beval_col  + s:shooting_animate_count,
             \   s:CURSOR_RED)
             let s:shooting_animate_count += 1
         else
