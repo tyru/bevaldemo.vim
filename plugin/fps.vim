@@ -129,7 +129,7 @@ function! s:BufferCommon.finalize()
         call s:error('error: ['.v:exception.'] @ ['.v:throwpoint.']')
     endtry
 
-    call s:error('Force-stopped! Please use :FPSStop for normal stop.')
+    call s:error('Force-stopped!')
 endfunction
 
 " NOTE: Doesn't care with multi-byte
