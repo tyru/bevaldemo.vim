@@ -94,6 +94,13 @@ function! s:BufferCommon.setup_common()
 endfunction
 
 function! s:BufferCommon.finalize()
+    if input('Do you sure want to force-stop? (use '':IrairaStop'' for normal stop) [y/n]: ') !~? 'y\%[es]'
+        echo "\nCanceled."
+        call s:deep_sleep_msec(2)
+        return
+    endif
+    echon "\n"
+
     try
         call s:buffer.finalize()
     catch
@@ -332,6 +339,17 @@ function! s:error(msg)
         echomsg a:msg
     finally
         echohl None
+    endtry
+endfunction
+
+" :sleep without being bothered by 'updatetime'.
+function! s:deep_sleep_msec(msec)
+    let save_updatetime = &updatetime
+    let &updatetime = a:msec + 1000
+    try
+        execute 'sleep '.a:msec.'m'
+    finally
+        let &updatetime = save_updatetime
     endtry
 endfunction
 
