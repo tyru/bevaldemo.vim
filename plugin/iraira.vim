@@ -71,6 +71,26 @@ function! s:call_common_buffer_method(name, args)
     return call(s:BufferCommon[a:name], a:args, s:BufferCommon)
 endfunction
 
+function! s:error(msg)
+    echohl ErrorMsg
+    try
+        echomsg a:msg
+    finally
+        echohl None
+    endtry
+endfunction
+
+" :sleep without being bothered by 'updatetime'.
+function! s:deep_sleep_msec(msec)
+    let save_updatetime = &updatetime
+    let &updatetime = a:msec + 1000
+    try
+        execute 'sleep '.a:msec.'m'
+    finally
+        let &updatetime = save_updatetime
+    endtry
+endfunction
+
 
 
 " s:BufferCommon {{{
@@ -331,27 +351,6 @@ endfunction
 " }}}
 
 
-
-
-function! s:error(msg)
-    echohl ErrorMsg
-    try
-        echomsg a:msg
-    finally
-        echohl None
-    endtry
-endfunction
-
-" :sleep without being bothered by 'updatetime'.
-function! s:deep_sleep_msec(msec)
-    let save_updatetime = &updatetime
-    let &updatetime = a:msec + 1000
-    try
-        execute 'sleep '.a:msec.'m'
-    finally
-        let &updatetime = save_updatetime
-    endtry
-endfunction
 
 
 " Restore 'cpoptions' {{{
